@@ -1,0 +1,48 @@
+{% extends "base_new.html" %}
+
+{% block body_class %}home-ref{% endblock %}
+
+{% block content %}
+<section id="produtos" class="home-categories">
+  <div class="section-container">
+    <div class="home-categories__divider" aria-hidden="true"></div>
+
+    <div class="home-categories__header">
+      <p class="kicker">{{ SITE_CONFIG.produtos_kicker }}</p>
+      <h2 class="heading-section">{{ SITE_CONFIG.produtos_title }}</h2>
+      <p class="muted">{{ SITE_CONFIG.produtos_subtitle }}</p>
+    </div>
+
+    {% if categorias_home %}
+    <div class="home-categories__grid" id="produtosGrid">
+      {% for categoria in categorias_home %}
+      <a href="/categorias/{{ categoria.slug }}" class="home-category-card">
+        <span class="home-category-card__frame">
+          <img
+            src="{{ categoria.imagem_url }}"
+            alt="{{ categoria.nome_exibicao }}"
+            class="home-category-card__image"
+          >
+        </span>
+        <span class="home-category-card__label">
+          <span class="home-category-card__title">{{ categoria.nome_exibicao }}</span>
+          {% if categoria.subtitulo_exibicao %}
+          <span class="home-category-card__subtitle">{{ categoria.subtitulo_exibicao }}</span>
+          {% endif %}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="products-empty-state">
+      <h3 class="section-title">Nenhuma categoria disponivel</h3>
+      <p class="section-subtitle">As categorias serao exibidas aqui assim que forem configuradas.</p>
+    </div>
+    {% endif %}
+
+    <div class="home-categories__divider home-categories__divider--bottom" aria-hidden="true"></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block pre_footer %}{% endblock %}
