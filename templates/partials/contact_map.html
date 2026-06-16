@@ -1,0 +1,15 @@
+<section class="contact-map">
+  <div class="section-container">
+    <h3 class="heading-lg">{{ SITE_CONFIG.map_title }}</h3>
+    <p class="muted">{{ SITE_CONFIG.map_address }}</p>
+    <div class="contact-map__frame">
+      <iframe
+        title="Mapa da loja"
+        src="{{ MAP_EMBED_URL }}"
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+</section>

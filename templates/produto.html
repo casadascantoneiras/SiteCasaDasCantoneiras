@@ -1,0 +1,33 @@
+{% extends "base_new.html" %}
+
+{% block body_class %}home-ref{% endblock %}
+
+{% block content %}
+{% set p = produto %}
+
+<section class="produto-page produto-page--gallery" aria-label="Galeria do produto">
+  <div class="neo-container produto-gallery-grid produto-gallery-grid--count-{{ p.imagens|length }}">
+    {% for imagem in p.imagens %}
+    <div class="produto-gallery-item">
+      <img
+        src="{{ imagem or '/static/images/placeholder.png' }}"
+        alt="{% if loop.index == 2 %}Medidas de {{ p.nome }}{% else %}{{ p.nome }}{% endif %}"
+        class="produto-gallery-image produto-gallery-image--{{ loop.index }}"
+        onerror="this.src='/static/images/placeholder.png'"
+      >
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="produto-page produto-page--description" aria-label="Descricao do produto">
+  <div class="neo-container produto-description-shell">
+    <div class="produto-description-panel">
+      <p>{{ p.resumo_curto if p.resumo_curto else "Descricao em breve para este produto." }}</p>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block pre_footer %}{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base_new.html" %}
+
+{% block body_class %}home-ref{% endblock %}
+
+{% block pre_footer %}{% endblock %}
+
+{% block content %}
+<section class="hero-home">
+  <div class="section-container">
+    <div class="hero-split">
+      <div class="hero-split__left">
+        <div class="hero-split__leftInner">
+          <p class="kicker kicker--on-dark">{{ SITE_CONFIG.home_hero_kicker }}</p>
+          <h1 class="hero-split__title">
+            {{ SITE_CONFIG.home_hero_title }}
+          </h1>
+        </div>
+      </div>
+
+      <div class="hero-split__right">
+        <div class="hero-split__media" aria-label="Marca e identidade visual">
+          <img
+            src="{{ home_hero_image.imagem_url }}"
+            alt="{{ home_hero_image.alt_texto }}"
+            class="hero-watermark-img"
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="home-categories">
+  <div class="section-container">
+    <div class="home-categories__divider" aria-hidden="true"></div>
+
+    <div class="home-categories__header">
+      <p class="kicker">{{ SITE_CONFIG.home_categories_kicker }}</p>
+      <h2 class="heading-section">{{ SITE_CONFIG.home_categories_title }}</h2>
+    </div>
+
+    <div class="home-categories__grid">
+      {% for categoria in categorias_home %}
+      <a href="/categorias/{{ categoria.slug }}" class="home-category-card">
+        <span class="home-category-card__frame">
+          <img
+            src="{{ categoria.imagem_url }}"
+            alt="{{ categoria.nome_exibicao }}"
+            class="home-category-card__image"
+          >
+        </span>
+        <span class="home-category-card__label">
+          <span class="home-category-card__title">{{ categoria.nome_exibicao }}</span>
+          {% if categoria.subtitulo_exibicao %}
+          <span class="home-category-card__subtitle">{{ categoria.subtitulo_exibicao }}</span>
+          {% endif %}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="home-categories__divider home-categories__divider--bottom" aria-hidden="true"></div>
+  </div>
+</section>
+
+<section class="sectors sectors--fullbleed sectors--home-banner">
+  <img
+    src="{{ home_banner_image.imagem_url }}"
+    alt="{{ home_banner_image.alt_texto }}"
+    class="sectors__fullbleedImage"
+  >
+</section>
+
+{% endblock %}

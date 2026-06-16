@@ -1,0 +1,1569 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% macro csrf_input() %}
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+{% endmacro %}
+
+{% macro admin_input(name, label, value, type='text', placeholder='') %}
+<div class="form-group">
+  <label for="{{ name }}" class="form-label">{{ label }}</label>
+  <input
+    type="{{ type }}"
+    id="{{ name }}"
+    name="{{ name }}"
+    value="{{ value }}"
+    class="form-input"
+    placeholder="{{ placeholder }}"
+  >
+</div>
+{% endmacro %}
+
+{% macro admin_textarea(name, label, value, rows=4, placeholder='') %}
+<div class="form-group form-group-full">
+  <label for="{{ name }}" class="form-label">{{ label }}</label>
+  <textarea
+    id="{{ name }}"
+    name="{{ name }}"
+    class="form-textarea"
+    rows="{{ rows }}"
+    placeholder="{{ placeholder }}"
+  >{{ value }}</textarea>
+</div>
+{% endmacro %}
+
+<section class="admin-header">
+  <div class="admin-header-content">
+    <div>
+      <h1 class="admin-title">Painel Administrativo</h1>
+      <p class="admin-subtitle">
+        {% if admin_page == 'frontend' %}
+        Gerencie textos, imagens, redes sociais, header, footer e paginas institucionais.
+        {% elif admin_page == 'catalogo' %}
+        Gerencie categorias, subcatalogos e produtos da vitrine.
+        {% else %}
+        Escolha a area que deseja administrar.
+        {% endif %}
+      </p>
+    </div>
+    <div class="admin-stats">
+      <div class="stat-badge">
+        <span class="stat-number">{{ categorias|length }}</span>
+        <span class="stat-text">Categorias</span>
+      </div>
+      <div class="stat-badge">
+        <span class="stat-number">{{ subcategorias|length }}</span>
+        <span class="stat-text">Subcatalogos</span>
+      </div>
+      <div class="stat-badge">
+        <span class="stat-number">{{ produtos|length }}</span>
+        <span class="stat-text">Produtos</span>
+      </div>
+      <div class="stat-badge">
+        <span class="stat-number">{{ quem_somos_imagens|length }}</span>
+        <span class="stat-text">Quem Somos</span>
+      </div>
+    </div>
+    <form method="post" action="/admin/logout">
+      {{ csrf_input() }}
+      <button type="submit" class="btn-cancel">Sair</button>
+    </form>
+  </div>
+</section>
+
+{% if admin_page == 'frontend' %}
+<section class="admin-section">
+  <div class="admin-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span class="card-icon">~</span>
+        Imagem da Home
+      </h2>
+    </div>
+
+    <form method="post" action="/admin/site-imagem/{{ home_banner_image.chave }}" class="admin-form" enctype="multipart/form-data">
+      {{ csrf_input() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="home-banner-alt-texto" class="form-label">Texto alternativo</label>
+          <input
+            type="text"
+            id="home-banner-alt-texto"
+            name="alt_texto"
+            value="{{ home_banner_image.alt_texto }}"
+            class="form-input"
+            placeholder="Ex: Imagem institucional"
+          >
+        </div>
+
+        <div class="form-group form-group-full">
+          <label class="form-label">Banner institucional da Home</label>
+          <label class="upload-area">
+            <input
+              type="file"
+              name="imagem"
+              accept="image/png,image/jpeg,image/webp"
+              class="upload-input"
+              onchange="updateUploadPreview(this, 'home-banner-preview', 'home-banner-upload-label')"
+            >
+            <span class="upload-content">
+              <span class="upload-title">Selecionar nova imagem</span>
+              <span class="upload-subtitle">PNG, JPG ou WEBP. Mantem a atual se nao escolher.</span>
+              <span id="home-banner-upload-label" class="upload-filename">Nenhum arquivo selecionado</span>
+            </span>
+          </label>
+          <div class="upload-preview upload-preview-wide">
+            <img
+              id="home-banner-preview"
+              class="upload-preview-img upload-preview-img-wide is-visible"
+              src="{{ home_banner_image.imagem_url }}"
+              alt="Preview do banner institucional da Home"
+              data-current-src="{{ home_banner_image.imagem_url }}"
+              onerror="this.style.display='none'"
+            >
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-save">Salvar Imagem da Home</button>
+    </form>
+  </div>
+</section>
+{% endif %}
+
+<section class="admin-section admin-section--compact">
+  <div class="admin-mode-nav">
+    <a href="/admin/catalogo" class="admin-mode-card{% if admin_page == 'catalogo' %} is-active{% endif %}">
+      <span class="admin-mode-card__title">Catalogo e produtos</span>
+      <span class="admin-mode-card__text">Categorias, subcatalogos, produtos e imagens dos itens.</span>
+    </a>
+    <a href="/admin/frontend" class="admin-mode-card{% if admin_page == 'frontend' %} is-active{% endif %}">
+      <span class="admin-mode-card__title">Frontend do site</span>
+      <span class="admin-mode-card__text">Textos, titulos, logo, banners, redes sociais, header e footer.</span>
+    </a>
+  </div>
+</section>
+
+{% if admin_page == 'dashboard' %}
+<section class="admin-section">
+  <div class="admin-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span class="card-icon">#</span>
+        Escolha uma area
+      </h2>
+    </div>
+    <div class="admin-dashboard-grid">
+      <a href="/admin/catalogo" class="admin-dashboard-card">
+        <span class="admin-dashboard-card__title">Editar catalogo</span>
+        <span class="admin-dashboard-card__text">Criar e editar categorias, subcatalogos e produtos.</span>
+      </a>
+      <a href="/admin/frontend" class="admin-dashboard-card">
+        <span class="admin-dashboard-card__title">Editar frontend</span>
+        <span class="admin-dashboard-card__text">Alterar textos, imagens, logo, redes sociais, mapa, header e footer.</span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if admin_page == 'frontend' %}
+<section class="admin-section">
+  <div class="admin-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span class="card-icon">T</span>
+        Textos, links e dados do site
+      </h2>
+    </div>
+
+    <form method="post" action="/admin/frontend/config" class="admin-form">
+      {{ csrf_input() }}
+      <h3 class="admin-form-title">Header e redes sociais</h3>
+      <div class="form-grid">
+        {{ admin_input('site_title', 'Titulo da aba do navegador', site_config.site_title) }}
+        {{ admin_input('header_brand_name', 'Nome no header', site_config.header_brand_name) }}
+        {{ admin_input('header_brand_tagline', 'Subtitulo no header', site_config.header_brand_tagline) }}
+        {{ admin_input('whatsapp_numero', 'Numero do WhatsApp', site_config.whatsapp_numero, 'text', 'Ex: 5561985700278') }}
+        {{ admin_input('instagram_url', 'Link do Instagram', site_config.instagram_url, 'url') }}
+        {{ admin_input('facebook_url', 'Link do Facebook', site_config.facebook_url, 'url') }}
+        {{ admin_input('nav_home', 'Menu: Home', site_config.nav_home) }}
+        {{ admin_input('nav_quem_somos', 'Menu: Quem Somos', site_config.nav_quem_somos) }}
+        {{ admin_input('nav_produtos', 'Menu: Produtos', site_config.nav_produtos) }}
+        {{ admin_input('nav_contato', 'Menu: Contato', site_config.nav_contato) }}
+      </div>
+
+      <h3 class="admin-form-title">Home</h3>
+      <div class="form-grid">
+        {{ admin_input('home_hero_kicker', 'Titulo principal da Home', site_config.home_hero_kicker) }}
+        {{ admin_textarea('home_hero_title', 'Texto principal da Home', site_config.home_hero_title, 5) }}
+        {{ admin_input('home_categories_kicker', 'Rotulo das categorias na Home', site_config.home_categories_kicker) }}
+        {{ admin_input('home_categories_title', 'Titulo das categorias na Home', site_config.home_categories_title) }}
+      </div>
+
+      <h3 class="admin-form-title">Produtos</h3>
+      <div class="form-grid">
+        {{ admin_input('produtos_kicker', 'Rotulo da pagina Produtos', site_config.produtos_kicker) }}
+        {{ admin_input('produtos_title', 'Titulo da pagina Produtos', site_config.produtos_title) }}
+        {{ admin_textarea('produtos_subtitle', 'Texto da pagina Produtos', site_config.produtos_subtitle, 3) }}
+      </div>
+
+      <h3 class="admin-form-title">Quem Somos</h3>
+      <div class="form-grid">
+        {{ admin_input('quem_somos_title', 'Titulo da pagina Quem Somos', site_config.quem_somos_title) }}
+        {{ admin_input('quem_somos_history_title', 'Titulo da historia', site_config.quem_somos_history_title) }}
+        {{ admin_textarea('quem_somos_history_text', 'Texto da historia', site_config.quem_somos_history_text, 6) }}
+        {{ admin_input('quem_somos_work_title', 'Titulo da secao Como Trabalhamos', site_config.quem_somos_work_title) }}
+        {{ admin_textarea('quem_somos_work_text_1', 'Texto Como Trabalhamos 1', site_config.quem_somos_work_text_1, 4) }}
+        {{ admin_textarea('quem_somos_work_text_2', 'Texto Como Trabalhamos 2', site_config.quem_somos_work_text_2, 4) }}
+        {{ admin_input('quem_somos_button_label', 'Texto do botao Quem Somos', site_config.quem_somos_button_label) }}
+      </div>
+
+      <h3 class="admin-form-title">Contato</h3>
+      <div class="form-grid">
+        {{ admin_input('contato_title', 'Titulo da pagina Contato', site_config.contato_title) }}
+        {{ admin_textarea('contato_subtitle', 'Texto da pagina Contato', site_config.contato_subtitle, 3) }}
+        {{ admin_input('contato_button_label', 'Texto do botao principal', site_config.contato_button_label) }}
+        {{ admin_input('contato_cta_title', 'Titulo da faixa de contato', site_config.contato_cta_title) }}
+        {{ admin_input('contato_cta_button_label', 'Texto do botao da faixa', site_config.contato_cta_button_label) }}
+      </div>
+
+      <h3 class="admin-form-title">Footer e localizacao</h3>
+      <div class="form-grid">
+        {{ admin_input('footer_brand_title', 'Nome no footer', site_config.footer_brand_title) }}
+        {{ admin_textarea('footer_description', 'Descricao no footer', site_config.footer_description, 3) }}
+        {{ admin_input('store_address', 'Endereco no footer', site_config.store_address) }}
+        {{ admin_input('store_email', 'E-mail no footer', site_config.store_email, 'email', 'Ex: contato@empresa.com') }}
+        {{ admin_input('store_cnpj', 'CNPJ no footer', site_config.store_cnpj) }}
+        {{ admin_input('footer_privacy_label', 'Texto do link de privacidade', site_config.footer_privacy_label) }}
+        {{ admin_input('footer_copyright', 'Copyright do footer', site_config.footer_copyright) }}
+        {{ admin_input('map_title', 'Titulo do mapa', site_config.map_title) }}
+        {{ admin_input('map_address', 'Endereco exibido no mapa', site_config.map_address) }}
+        {{ admin_textarea('map_embed_url', 'URL de embed do Google Maps', site_config.map_embed_url, 3) }}
+      </div>
+
+      <button type="submit" class="btn-save">Salvar textos e links</button>
+    </form>
+  </div>
+</section>
+
+<section class="admin-section">
+  <div class="admin-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span class="card-icon">I</span>
+        Imagens gerais do site
+      </h2>
+    </div>
+
+    <div class="admin-image-grid">
+      {% for field in site_image_fields %}
+      {% if field.chave != 'home_banner' %}
+      {% set site_image = site_images[field.chave] %}
+      <form method="post" action="/admin/site-imagem/{{ field.chave }}" class="admin-form admin-image-form" enctype="multipart/form-data">
+        {{ csrf_input() }}
+        <h3 class="admin-form-title">{{ field.label }}</h3>
+        <p class="admin-helper-text">{{ field.help }}</p>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="{{ field.chave }}-alt-texto" class="form-label">Texto alternativo</label>
+            <input
+              type="text"
+              id="{{ field.chave }}-alt-texto"
+              name="alt_texto"
+              value="{{ site_image.alt_texto }}"
+              class="form-input"
+            >
+          </div>
+
+          <div class="form-group form-group-full">
+            <label class="form-label">Imagem</label>
+            <label class="upload-area">
+              <input
+                type="file"
+                name="imagem"
+                accept="image/png,image/jpeg,image/webp"
+                class="upload-input"
+                onchange="updateUploadPreview(this, '{{ field.chave }}-preview', '{{ field.chave }}-upload-label')"
+              >
+              <span class="upload-content">
+                <span class="upload-title">Selecionar nova imagem</span>
+                <span class="upload-subtitle">PNG, JPG ou WEBP. Mantem a atual se nao escolher.</span>
+                <span id="{{ field.chave }}-upload-label" class="upload-filename">Nenhum arquivo selecionado</span>
+              </span>
+            </label>
+            <div class="upload-preview upload-preview-wide">
+              <img
+                id="{{ field.chave }}-preview"
+                class="upload-preview-img upload-preview-img-wide is-visible"
+                src="{{ site_image.imagem_url }}"
+                alt="Preview de {{ field.label }}"
+                data-current-src="{{ site_image.imagem_url }}"
+                onerror="this.style.display='none'"
+              >
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-save">Salvar imagem</button>
+      </form>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="admin-section">
+  <div class="admin-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span class="card-icon">*</span>
+        Galeria Quem Somos
+      </h2>
+    </div>
+
+    <form method="post" action="/admin/quem-somos/imagem" class="admin-form" enctype="multipart/form-data">
+      {{ csrf_input() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="quem-somos-alt-texto" class="form-label">Texto alternativo</label>
+          <input
+            type="text"
+            id="quem-somos-alt-texto"
+            name="alt_texto"
+            class="form-input"
+            placeholder="Ex: Estruturas metalicas expostas"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Imagem da galeria *</label>
+          <label class="upload-area">
+            <input
+              type="file"
+              name="imagem"
+              accept="image/png,image/jpeg"
+              class="upload-input"
+              required
+              onchange="updateUploadPreview(this, 'create-quem-somos-preview', 'create-quem-somos-upload-label')"
+            >
+            <span class="upload-content">
+              <span class="upload-title">Toque para escolher uma imagem</span>
+              <span class="upload-subtitle">PNG ou JPG</span>
+              <span id="create-quem-somos-upload-label" class="upload-filename">Nenhum arquivo selecionado</span>
+            </span>
+          </label>
+          <div class="upload-preview">
+            <img id="create-quem-somos-preview" class="upload-preview-img" alt="Preview da galeria Quem Somos" data-current-src="" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="quem-somos-ordem" class="form-label">Ordem</label>
+          <input
+            type="number"
+            id="quem-somos-ordem"
+            name="ordem_exibicao"
+            class="form-input"
+            min="0"
+            value="{{ quem_somos_imagens|length + 1 }}"
+          >
+        </div>
+      </div>
+      <button type="submit" class="btn-save">Adicionar Imagem</button>
+    </form>
+
+    {% if quem_somos_imagens %}
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Preview</th>
+            <th>Ordem</th>
+            <th>Texto alternativo</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for imagem in quem_somos_imagens %}
+          <tr id="quem-somos-row-{{ imagem.id }}">
+            <td>#{{ imagem.id }}</td>
+            <td>
+              <img
+                src="{{ imagem.imagem_url }}"
+                alt="{{ imagem.alt_texto }}"
+                style="width: 72px; height: 72px; object-fit: cover; border-radius: 12px;"
+              >
+            </td>
+            <td>{{ imagem.ordem_exibicao }}</td>
+            <td>{{ imagem.alt_texto }}</td>
+            <td>
+              <button class="btn-edit" onclick="toggleEditForm('quem-somos', '{{ imagem.id }}')">Editar</button>
+              <button class="btn-delete" onclick="confirmDeleteQuemSomosImagem('{{ imagem.id }}')">Excluir</button>
+            </td>
+          </tr>
+          <tr id="quem-somos-edit-row-{{ imagem.id }}" class="edit-row" style="display: none;">
+            <td colspan="5">
+              <form method="post" action="/admin/quem-somos/imagem/{{ imagem.id }}" class="edit-form" enctype="multipart/form-data">
+                {{ csrf_input() }}
+                <input type="hidden" name="_method" value="PUT">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="edit-quem-somos-alt-texto-{{ imagem.id }}" class="form-label">Texto alternativo</label>
+                    <input
+                      type="text"
+                      id="edit-quem-somos-alt-texto-{{ imagem.id }}"
+                      name="alt_texto"
+                      value="{{ imagem.alt_texto }}"
+                      class="form-input"
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Trocar imagem (opcional)</label>
+                    <label class="upload-area upload-area-compact">
+                      <input
+                        type="file"
+                        name="imagem"
+                        accept="image/png,image/jpeg"
+                        class="upload-input"
+                        onchange="updateUploadPreview(this, 'edit-quem-somos-preview-{{ imagem.id }}', 'edit-quem-somos-upload-label-{{ imagem.id }}')"
+                      >
+                      <span class="upload-content">
+                        <span class="upload-title">Selecionar nova imagem</span>
+                        <span class="upload-subtitle">Mantem a atual se nao escolher</span>
+                        <span id="edit-quem-somos-upload-label-{{ imagem.id }}" class="upload-filename">Nenhum arquivo selecionado</span>
+                      </span>
+                    </label>
+                    <div class="upload-preview">
+                      <img
+                        id="edit-quem-somos-preview-{{ imagem.id }}"
+                        class="upload-preview-img is-visible"
+                        src="{{ imagem.imagem_url }}"
+                        alt="Preview da imagem atual da galeria"
+                        data-current-src="{{ imagem.imagem_url }}"
+                        onerror="this.style.display='none'"
+                      >
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-quem-somos-ordem-{{ imagem.id }}" class="form-label">Ordem</label>
+                    <input
+                      type="number"
+                      id="edit-quem-somos-ordem-{{ imagem.id }}"
+                      name="ordem_exibicao"
+                      value="{{ imagem.ordem_exibicao }}"
+                      class="form-input"
+                      min="0"
+                    >
+                  </div>
+                </div>
+
+                <div class="edit-form-actions">
+                  <button type="submit" class="btn-save">Salvar Alteracoes</button>
+                  <button type="button" class="btn-cancel" onclick="toggleEditForm('quem-somos', '{{ imagem.id }}')">Cancelar</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state-admin">
+      <div class="empty-icon">*</div>
+      <p class="empty-title">Nenhuma imagem cadastrada</p>
+      <p class="empty-text">Adicione imagens para exibir na pagina Quem Somos.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endif %}
+
+{% if admin_page == 'catalogo' %}
+<section class="admin-section">
+  <div class="admin-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span class="card-icon">#</span>
+        Gerenciar Categorias
+      </h2>
+    </div>
+
+    <form method="post" action="/admin/categoria" class="admin-form" enctype="multipart/form-data">
+      {{ csrf_input() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="categoria-slug" class="form-label">Slug *</label>
+          <input
+            type="text"
+            id="categoria-slug"
+            name="slug"
+            class="form-input"
+            placeholder="Ex: cantoneiras-de-aluminio"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="categoria-nome" class="form-label">Nome interno *</label>
+          <input
+            type="text"
+            id="categoria-nome"
+            name="nome"
+            class="form-input"
+            placeholder="Ex: Cantoneiras de Aluminio"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="categoria-nome-exibicao" class="form-label">Nome de exibicao *</label>
+          <input
+            type="text"
+            id="categoria-nome-exibicao"
+            name="nome_exibicao"
+            class="form-input"
+            placeholder="Ex: Cantoneiras de Alumínio"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="categoria-subtitulo" class="form-label">Subtitulo</label>
+          <input
+            type="text"
+            id="categoria-subtitulo"
+            name="subtitulo_exibicao"
+            class="form-input"
+            placeholder="Ex: Ferramentas"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Imagem da categoria</label>
+          <label class="upload-area">
+            <input
+              type="file"
+              name="imagem"
+              accept="image/png,image/jpeg,image/webp"
+              class="upload-input"
+              onchange="updateUploadPreview(this, 'create-categoria-preview', 'create-categoria-upload-label')"
+            >
+            <span class="upload-content">
+              <span class="upload-title">Toque para escolher uma imagem</span>
+              <span class="upload-subtitle">PNG, JPG ou WEBP</span>
+              <span id="create-categoria-upload-label" class="upload-filename">Nenhum arquivo selecionado</span>
+            </span>
+          </label>
+          <div class="upload-preview">
+            <img id="create-categoria-preview" class="upload-preview-img" alt="Preview da categoria" data-current-src="" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="categoria-ordem" class="form-label">Ordem</label>
+          <input
+            type="number"
+            id="categoria-ordem"
+            name="ordem_exibicao"
+            class="form-input"
+            min="0"
+            value="{{ categorias|length + 1 }}"
+          >
+        </div>
+      </div>
+      <button type="submit" class="btn-save">Criar Categoria</button>
+    </form>
+
+    {% if categorias %}
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Ordem</th>
+            <th>Nome</th>
+            <th>Slug</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in categorias %}
+          <tr id="categoria-row-{{ c.id }}">
+            <td>#{{ c.id }}</td>
+            <td>{{ c.ordem_exibicao }}</td>
+            <td>
+              {{ c.nome_exibicao }}
+              {% if c.subtitulo_exibicao %}
+              / {{ c.subtitulo_exibicao }}
+              {% endif %}
+            </td>
+            <td>{{ c.slug }}</td>
+            <td>
+              <button class="btn-edit" onclick="toggleEditForm('categoria', '{{ c.id }}')">Editar</button>
+              <button class="btn-delete" onclick="confirmDeleteCategoria('{{ c.id }}')">Excluir</button>
+            </td>
+          </tr>
+          <tr id="categoria-edit-row-{{ c.id }}" class="edit-row" style="display: none;">
+            <td colspan="5">
+              <form method="post" action="/admin/categoria/{{ c.id }}" class="edit-form" enctype="multipart/form-data">
+                {{ csrf_input() }}
+                <input type="hidden" name="_method" value="PUT">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="edit-categoria-slug-{{ c.id }}" class="form-label">Slug</label>
+                    <input
+                      type="text"
+                      id="edit-categoria-slug-{{ c.id }}"
+                      name="slug"
+                      value="{{ c.slug }}"
+                      class="form-input"
+                      required
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-categoria-nome-{{ c.id }}" class="form-label">Nome interno</label>
+                    <input
+                      type="text"
+                      id="edit-categoria-nome-{{ c.id }}"
+                      name="nome"
+                      value="{{ c.nome }}"
+                      class="form-input"
+                      required
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-categoria-nome-exibicao-{{ c.id }}" class="form-label">Nome de exibicao</label>
+                    <input
+                      type="text"
+                      id="edit-categoria-nome-exibicao-{{ c.id }}"
+                      name="nome_exibicao"
+                      value="{{ c.nome_exibicao }}"
+                      class="form-input"
+                      required
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-categoria-subtitulo-{{ c.id }}" class="form-label">Subtitulo</label>
+                    <input
+                      type="text"
+                      id="edit-categoria-subtitulo-{{ c.id }}"
+                      name="subtitulo_exibicao"
+                      value="{{ c.subtitulo_exibicao or '' }}"
+                      class="form-input"
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Trocar imagem da categoria (opcional)</label>
+                    <label class="upload-area upload-area-compact">
+                      <input
+                        type="file"
+                        name="imagem"
+                        accept="image/png,image/jpeg,image/webp"
+                        class="upload-input"
+                        onchange="updateUploadPreview(this, 'edit-categoria-preview-{{ c.id }}', 'edit-categoria-upload-label-{{ c.id }}')"
+                      >
+                      <span class="upload-content">
+                        <span class="upload-title">Selecionar nova imagem</span>
+                        <span class="upload-subtitle">Mantem a atual se nao escolher</span>
+                        <span id="edit-categoria-upload-label-{{ c.id }}" class="upload-filename">Nenhum arquivo selecionado</span>
+                      </span>
+                    </label>
+                    <div class="upload-preview">
+                      <img
+                        id="edit-categoria-preview-{{ c.id }}"
+                        class="upload-preview-img is-visible"
+                        src="{{ c.imagem_url }}"
+                        alt="Preview da categoria atual"
+                        data-current-src="{{ c.imagem_url }}"
+                        onerror="this.style.display='none'"
+                      >
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-categoria-ordem-{{ c.id }}" class="form-label">Ordem</label>
+                    <input
+                      type="number"
+                      id="edit-categoria-ordem-{{ c.id }}"
+                      name="ordem_exibicao"
+                      value="{{ c.ordem_exibicao }}"
+                      class="form-input"
+                      min="0"
+                    >
+                  </div>
+                </div>
+
+                <div class="edit-form-actions">
+                  <button type="submit" class="btn-save">Salvar Alteracoes</button>
+                  <button type="button" class="btn-cancel" onclick="toggleEditForm('categoria', '{{ c.id }}')">Cancelar</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state-admin">
+      <div class="empty-icon">#</div>
+      <p class="empty-title">Nenhuma categoria cadastrada</p>
+      <p class="empty-text">Crie a primeira categoria usando o formulario acima.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="admin-section">
+  <div class="admin-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span class="card-icon">#</span>
+        Gerenciar Subcatalogos
+      </h2>
+    </div>
+
+    <form method="post" action="/admin/subcategoria" class="admin-form" enctype="multipart/form-data">
+      {{ csrf_input() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="subcategoria-categoria" class="form-label">Categoria *</label>
+          <select
+            id="subcategoria-categoria"
+            name="categoria_slug"
+            class="form-input"
+            required
+          >
+            <option value="">Selecione a categoria</option>
+            {% for categoria in categorias %}
+            <option value="{{ categoria.slug }}">{{ categoria.nome_exibicao }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="subcategoria-slug" class="form-label">Slug *</label>
+          <input
+            type="text"
+            id="subcategoria-slug"
+            name="slug"
+            class="form-input"
+            placeholder="Ex: alicate-universal"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="subcategoria-nome" class="form-label">Nome interno *</label>
+          <input
+            type="text"
+            id="subcategoria-nome"
+            name="nome"
+            class="form-input"
+            placeholder="Ex: Alicate Universal"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="subcategoria-nome-exibicao" class="form-label">Nome de exibicao *</label>
+          <input
+            type="text"
+            id="subcategoria-nome-exibicao"
+            name="nome_exibicao"
+            class="form-input"
+            placeholder="Ex: Alicate Universal"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Imagem do subcatalogo</label>
+          <label class="upload-area">
+            <input
+              type="file"
+              name="imagem"
+              accept="image/png,image/jpeg,image/webp"
+              class="upload-input"
+              onchange="updateUploadPreview(this, 'create-subcategoria-preview', 'create-subcategoria-upload-label')"
+            >
+            <span class="upload-content">
+              <span class="upload-title">Toque para escolher uma imagem</span>
+              <span class="upload-subtitle">PNG, JPG ou WEBP</span>
+              <span id="create-subcategoria-upload-label" class="upload-filename">Nenhum arquivo selecionado</span>
+            </span>
+          </label>
+          <div class="upload-preview">
+            <img id="create-subcategoria-preview" class="upload-preview-img" alt="Preview do subcatalogo" data-current-src="" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="subcategoria-ordem" class="form-label">Ordem</label>
+          <input
+            type="number"
+            id="subcategoria-ordem"
+            name="ordem_exibicao"
+            class="form-input"
+            min="0"
+            value="{{ subcategorias|length + 1 }}"
+          >
+        </div>
+      </div>
+      <button type="submit" class="btn-save">Criar Subcatalogo</button>
+    </form>
+
+    {% if subcategorias %}
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Categoria</th>
+            <th>Ordem</th>
+            <th>Nome</th>
+            <th>Slug</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in subcategorias %}
+          <tr id="subcategoria-row-{{ s.id }}">
+            <td>#{{ s.id }}</td>
+            <td>{{ s.categoria_slug }}</td>
+            <td>{{ s.ordem_exibicao }}</td>
+            <td>{{ s.nome_exibicao }}</td>
+            <td>{{ s.slug }}</td>
+            <td>
+              <button class="btn-edit" onclick="toggleEditForm('subcategoria', '{{ s.id }}')">Editar</button>
+              <button class="btn-delete" onclick="confirmDeleteSubcategoria('{{ s.id }}')">Excluir</button>
+            </td>
+          </tr>
+          <tr id="subcategoria-edit-row-{{ s.id }}" class="edit-row" style="display: none;">
+            <td colspan="6">
+              <form method="post" action="/admin/subcategoria/{{ s.id }}" class="edit-form" enctype="multipart/form-data">
+                {{ csrf_input() }}
+                <input type="hidden" name="_method" value="PUT">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="edit-subcategoria-categoria-{{ s.id }}" class="form-label">Categoria</label>
+                    <select
+                      id="edit-subcategoria-categoria-{{ s.id }}"
+                      name="categoria_slug"
+                      class="form-input"
+                      required
+                    >
+                      <option value="">Selecione a categoria</option>
+                      {% for categoria in categorias %}
+                      <option value="{{ categoria.slug }}" {% if categoria.slug == s.categoria_slug %}selected{% endif %}>
+                        {{ categoria.nome_exibicao }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-subcategoria-slug-{{ s.id }}" class="form-label">Slug</label>
+                    <input
+                      type="text"
+                      id="edit-subcategoria-slug-{{ s.id }}"
+                      name="slug"
+                      value="{{ s.slug }}"
+                      class="form-input"
+                      required
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-subcategoria-nome-{{ s.id }}" class="form-label">Nome interno</label>
+                    <input
+                      type="text"
+                      id="edit-subcategoria-nome-{{ s.id }}"
+                      name="nome"
+                      value="{{ s.nome }}"
+                      class="form-input"
+                      required
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-subcategoria-nome-exibicao-{{ s.id }}" class="form-label">Nome de exibicao</label>
+                    <input
+                      type="text"
+                      id="edit-subcategoria-nome-exibicao-{{ s.id }}"
+                      name="nome_exibicao"
+                      value="{{ s.nome_exibicao }}"
+                      class="form-input"
+                      required
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Trocar imagem do subcatalogo (opcional)</label>
+                    <label class="upload-area upload-area-compact">
+                      <input
+                        type="file"
+                        name="imagem"
+                        accept="image/png,image/jpeg,image/webp"
+                        class="upload-input"
+                        onchange="updateUploadPreview(this, 'edit-subcategoria-preview-{{ s.id }}', 'edit-subcategoria-upload-label-{{ s.id }}')"
+                      >
+                      <span class="upload-content">
+                        <span class="upload-title">Selecionar nova imagem</span>
+                        <span class="upload-subtitle">Mantem a atual se nao escolher</span>
+                        <span id="edit-subcategoria-upload-label-{{ s.id }}" class="upload-filename">Nenhum arquivo selecionado</span>
+                      </span>
+                    </label>
+                    <div class="upload-preview">
+                      <img
+                        id="edit-subcategoria-preview-{{ s.id }}"
+                        class="upload-preview-img is-visible"
+                        src="{{ s.imagem_url }}"
+                        alt="Preview do subcatalogo atual"
+                        data-current-src="{{ s.imagem_url }}"
+                        onerror="this.style.display='none'"
+                      >
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-subcategoria-ordem-{{ s.id }}" class="form-label">Ordem</label>
+                    <input
+                      type="number"
+                      id="edit-subcategoria-ordem-{{ s.id }}"
+                      name="ordem_exibicao"
+                      value="{{ s.ordem_exibicao }}"
+                      class="form-input"
+                      min="0"
+                    >
+                  </div>
+                </div>
+
+                <div class="edit-form-actions">
+                  <button type="submit" class="btn-save">Salvar Alteracoes</button>
+                  <button type="button" class="btn-cancel" onclick="toggleEditForm('subcategoria', '{{ s.id }}')">Cancelar</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state-admin">
+      <div class="empty-icon">#</div>
+      <p class="empty-title">Nenhum subcatalogo cadastrado</p>
+      <p class="empty-text">Crie o primeiro subcatalogo usando o formulario acima.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="admin-section">
+  <div class="admin-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span class="card-icon">+</span>
+        Criar Novo Produto
+      </h2>
+    </div>
+
+    <form method="post" action="/admin/produto" class="admin-form" enctype="multipart/form-data">
+      {{ csrf_input() }}
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="nome" class="form-label">Nome do Produto *</label>
+          <input
+            type="text"
+            id="nome"
+            name="nome"
+            class="form-input"
+            placeholder="Ex: Cantoneira de Aco 20x20"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="categoria_slug" class="form-label">Categoria *</label>
+          <select
+            id="categoria_slug"
+            name="categoria_slug"
+            class="form-input"
+            required
+          >
+            <option value="">Selecione a categoria</option>
+            {% for categoria in categorias %}
+            <option value="{{ categoria.slug }}">{{ categoria.nome_exibicao }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group" id="create-subcategoria-group" style="display: none;">
+          <label for="subcategoria_slug" class="form-label">Subcatalogo</label>
+          <select
+            id="subcategoria_slug"
+            name="subcategoria_slug"
+            class="form-input"
+            data-current=""
+          >
+            <option value="">Selecione o subcatalogo</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="produto-ordem" class="form-label">Ordem no catalogo</label>
+          <input
+            type="number"
+            id="produto-ordem"
+            name="ordem_exibicao"
+            class="form-input"
+            min="0"
+            placeholder="Automatico: final da lista"
+          >
+        </div>
+
+        <div class="form-group form-group-full">
+          <label for="resumo_curto" class="form-label">Descricao</label>
+          <textarea
+            id="resumo_curto"
+            name="resumo_curto"
+            class="form-textarea"
+            placeholder="Descricao exibida no card e na pagina do produto"
+            rows="5"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Imagem principal</label>
+          <label class="upload-area">
+            <input
+              type="file"
+              name="imagem"
+              accept="image/png,image/jpeg,image/webp"
+              class="upload-input"
+              onchange="updateUploadPreview(this, 'create-preview', 'create-upload-label')"
+            >
+            <span class="upload-content">
+              <span class="upload-title">Toque para escolher uma imagem</span>
+              <span class="upload-subtitle">PNG, JPG ou WEBP</span>
+              <span id="create-upload-label" class="upload-filename">Nenhum arquivo selecionado</span>
+            </span>
+          </label>
+          <div class="upload-preview">
+            <img id="create-preview" class="upload-preview-img" alt="Preview da imagem" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Imagem de medidas</label>
+          <label class="upload-area">
+            <input
+              type="file"
+              name="imagem_medidas"
+              accept="image/png,image/jpeg,image/webp"
+              class="upload-input"
+              onchange="updateUploadPreview(this, 'create-preview-medidas', 'create-upload-label-medidas')"
+            >
+            <span class="upload-content">
+              <span class="upload-title">Toque para escolher a imagem de medidas</span>
+              <span class="upload-subtitle">PNG, JPG ou WEBP</span>
+              <span id="create-upload-label-medidas" class="upload-filename">Nenhum arquivo selecionado</span>
+            </span>
+          </label>
+          <div class="upload-preview">
+            <img id="create-preview-medidas" class="upload-preview-img" alt="Preview da imagem de medidas" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Terceira imagem</label>
+          <label class="upload-area">
+            <input
+              type="file"
+              name="imagem_extra"
+              accept="image/png,image/jpeg,image/webp"
+              class="upload-input"
+              onchange="updateUploadPreview(this, 'create-preview-extra', 'create-upload-label-extra')"
+            >
+            <span class="upload-content">
+              <span class="upload-title">Toque para escolher a terceira imagem</span>
+              <span class="upload-subtitle">PNG, JPG ou WEBP</span>
+              <span id="create-upload-label-extra" class="upload-filename">Nenhum arquivo selecionado</span>
+            </span>
+          </label>
+          <div class="upload-preview">
+            <img id="create-preview-extra" class="upload-preview-img" alt="Preview da terceira imagem" />
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn-save">Criar Produto</button>
+    </form>
+  </div>
+</section>
+
+<section class="admin-section">
+  <div class="admin-card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <span class="card-icon">#</span>
+        Lista de Produtos
+      </h2>
+    </div>
+
+    {% if produtos %}
+    <div class="table-responsive">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Ordem</th>
+            <th>Nome</th>
+            <th>Catalogo</th>
+            <th>Acoes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in produtos %}
+          <tr id="produto-row-{{ p.id }}">
+            <td>#{{ p.id }}</td>
+            <td>{{ p.ordem_exibicao }}</td>
+            <td>{{ p.nome }}</td>
+            <td>
+              {{ p.categoria_nome_exibicao or 'Sem categoria' }}
+              {% if p.subcategoria_nome_exibicao %}
+              / {{ p.subcategoria_nome_exibicao }}
+              {% endif %}
+            </td>
+            <td>
+              <button class="btn-edit" onclick="toggleEditForm('produto', '{{ p.id }}')">Editar</button>
+              <button class="btn-delete" onclick="confirmDeleteProduto('{{ p.id }}')">Excluir</button>
+            </td>
+          </tr>
+          <tr id="produto-edit-row-{{ p.id }}" class="edit-row" style="display: none;">
+            <td colspan="5">
+              <form method="post" action="/admin/produto/{{ p.id }}" class="edit-form" enctype="multipart/form-data">
+                {{ csrf_input() }}
+                <input type="hidden" name="_method" value="PUT">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label for="edit-nome-{{ p.id }}" class="form-label">Nome</label>
+                    <input
+                      type="text"
+                      id="edit-nome-{{ p.id }}"
+                      name="nome"
+                      value="{{ p.nome }}"
+                      class="form-input"
+                      required
+                    >
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-categoria-slug-{{ p.id }}" class="form-label">Categoria</label>
+                    <select
+                      id="edit-categoria-slug-{{ p.id }}"
+                      name="categoria_slug"
+                      class="form-input"
+                      required
+                    >
+                      <option value="">Selecione a categoria</option>
+                      {% for categoria in categorias %}
+                      <option value="{{ categoria.slug }}" {% if categoria.slug == p.categoria_slug %}selected{% endif %}>
+                        {{ categoria.nome_exibicao }}
+                      </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div class="form-group" id="edit-subcategoria-group-{{ p.id }}" style="display: none;">
+                    <label for="edit-produto-subcategoria-slug-{{ p.id }}" class="form-label">Subcatalogo</label>
+                    <select
+                      id="edit-produto-subcategoria-slug-{{ p.id }}"
+                      name="subcategoria_slug"
+                      class="form-input"
+                      data-current="{{ p.subcategoria_slug or '' }}"
+                    >
+                      <option value="">Selecione o subcatalogo</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="edit-produto-ordem-{{ p.id }}" class="form-label">Ordem no catalogo</label>
+                    <input
+                      type="number"
+                      id="edit-produto-ordem-{{ p.id }}"
+                      name="ordem_exibicao"
+                      value="{{ p.ordem_exibicao }}"
+                      class="form-input"
+                      min="0"
+                    >
+                  </div>
+
+                  <div class="form-group form-group-full">
+                    <label for="edit-resumo-curto-{{ p.id }}" class="form-label">Descricao</label>
+                    <textarea
+                      id="edit-resumo-curto-{{ p.id }}"
+                      name="resumo_curto"
+                      class="form-textarea"
+                      rows="5"
+                    >{{ p.resumo_curto or '' }}</textarea>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Trocar imagem principal (opcional)</label>
+                    <label class="upload-area upload-area-compact">
+                      <input
+                        type="file"
+                        name="imagem"
+                        accept="image/png,image/jpeg,image/webp"
+                        class="upload-input"
+                        onchange="updateUploadPreview(this, 'edit-preview-{{ p.id }}', 'edit-upload-label-{{ p.id }}', 'remove-image-{{ p.id }}', 'remove-image-btn-{{ p.id }}')"
+                      >
+                      <span class="upload-content">
+                        <span class="upload-title">Selecionar nova imagem</span>
+                        <span class="upload-subtitle">Mantem a atual se nao escolher</span>
+                        <span id="edit-upload-label-{{ p.id }}" class="upload-filename">Nenhum arquivo selecionado</span>
+                      </span>
+                    </label>
+                    <input type="hidden" name="remover_imagem" id="remove-image-{{ p.id }}" value="0">
+                    <div class="upload-preview">
+                      <img id="edit-preview-{{ p.id }}" class="upload-preview-img is-visible" src="{{ p.imagem_url }}" alt="Preview da imagem atual" data-current-src="{{ p.imagem_url }}" onerror="this.style.display='none'">
+                      <button
+                        type="button"
+                        class="upload-remove-btn"
+                        id="remove-image-btn-{{ p.id }}"
+                        aria-label="Remover imagem principal"
+                        title="Remover imagem"
+                        data-preview-id="edit-preview-{{ p.id }}"
+                        onclick="removeUploadImage(this, 'imagem', 'edit-preview-{{ p.id }}', 'edit-upload-label-{{ p.id }}', 'remove-image-{{ p.id }}')"
+                        {% if not p.tem_imagem %}style="display: none;"{% endif %}
+                      >X</button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Trocar imagem de medidas (opcional)</label>
+                    <label class="upload-area upload-area-compact">
+                      <input
+                        type="file"
+                        name="imagem_medidas"
+                        accept="image/png,image/jpeg,image/webp"
+                        class="upload-input"
+                        onchange="updateUploadPreview(this, 'edit-preview-medidas-{{ p.id }}', 'edit-upload-label-medidas-{{ p.id }}', 'remove-image-medidas-{{ p.id }}', 'remove-image-medidas-btn-{{ p.id }}')"
+                      >
+                      <span class="upload-content">
+                        <span class="upload-title">Selecionar nova imagem de medidas</span>
+                        <span class="upload-subtitle">Mantem a atual se nao escolher</span>
+                        <span id="edit-upload-label-medidas-{{ p.id }}" class="upload-filename">Nenhum arquivo selecionado</span>
+                      </span>
+                    </label>
+                    <input type="hidden" name="remover_imagem_medidas" id="remove-image-medidas-{{ p.id }}" value="0">
+                    <div class="upload-preview">
+                      <img
+                        id="edit-preview-medidas-{{ p.id }}"
+                        class="upload-preview-img{% if p.imagem_medidas_url %} is-visible{% endif %}"
+                        src="{{ p.imagem_medidas_url or '' }}"
+                        alt="Preview da imagem de medidas atual"
+                        data-current-src="{{ p.imagem_medidas_url or '' }}"
+                        onerror="this.style.display='none'"
+                      >
+                      <button
+                        type="button"
+                        class="upload-remove-btn"
+                        id="remove-image-medidas-btn-{{ p.id }}"
+                        aria-label="Remover imagem de medidas"
+                        title="Remover imagem"
+                        data-preview-id="edit-preview-medidas-{{ p.id }}"
+                        onclick="removeUploadImage(this, 'imagem_medidas', 'edit-preview-medidas-{{ p.id }}', 'edit-upload-label-medidas-{{ p.id }}', 'remove-image-medidas-{{ p.id }}')"
+                        {% if not p.imagem_medidas_url %}style="display: none;"{% endif %}
+                      >X</button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Trocar terceira imagem (opcional)</label>
+                    <label class="upload-area upload-area-compact">
+                      <input
+                        type="file"
+                        name="imagem_extra"
+                        accept="image/png,image/jpeg,image/webp"
+                        class="upload-input"
+                        onchange="updateUploadPreview(this, 'edit-preview-extra-{{ p.id }}', 'edit-upload-label-extra-{{ p.id }}', 'remove-image-extra-{{ p.id }}', 'remove-image-extra-btn-{{ p.id }}')"
+                      >
+                      <span class="upload-content">
+                        <span class="upload-title">Selecionar terceira imagem</span>
+                        <span class="upload-subtitle">Mantem a atual se nao escolher</span>
+                        <span id="edit-upload-label-extra-{{ p.id }}" class="upload-filename">Nenhum arquivo selecionado</span>
+                      </span>
+                    </label>
+                    <input type="hidden" name="remover_imagem_extra" id="remove-image-extra-{{ p.id }}" value="0">
+                    <div class="upload-preview">
+                      <img
+                        id="edit-preview-extra-{{ p.id }}"
+                        class="upload-preview-img{% if p.imagem_extra_url %} is-visible{% endif %}"
+                        src="{{ p.imagem_extra_url or '' }}"
+                        alt="Preview da terceira imagem atual"
+                        data-current-src="{{ p.imagem_extra_url or '' }}"
+                        onerror="this.style.display='none'"
+                      >
+                      <button
+                        type="button"
+                        class="upload-remove-btn"
+                        id="remove-image-extra-btn-{{ p.id }}"
+                        aria-label="Remover terceira imagem"
+                        title="Remover imagem"
+                        data-preview-id="edit-preview-extra-{{ p.id }}"
+                        onclick="removeUploadImage(this, 'imagem_extra', 'edit-preview-extra-{{ p.id }}', 'edit-upload-label-extra-{{ p.id }}', 'remove-image-extra-{{ p.id }}')"
+                        {% if not p.imagem_extra_url %}style="display: none;"{% endif %}
+                      >X</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="edit-form-actions">
+                  <button type="submit" class="btn-save">Salvar Alteracoes</button>
+                  <button type="button" class="btn-cancel" onclick="toggleEditForm('produto', '{{ p.id }}')">Cancelar</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state-admin">
+      <div class="empty-icon">#</div>
+      <p class="empty-title">Nenhum produto cadastrado</p>
+      <p class="empty-text">Crie seu primeiro produto usando o formulario acima.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% endif %}
+
+<script>
+const SUBCATEGORIAS_POR_CATEGORIA = {{ subcategorias_por_categoria | tojson }};
+const CSRF_TOKEN = {{ csrf_token | tojson }};
+
+function toggleEditForm(prefix, id) {
+  const editRow = document.getElementById(`${prefix}-edit-row-${id}`);
+  const itemRow = document.getElementById(`${prefix}-row-${id}`);
+
+  if (!editRow || !itemRow) return;
+
+  if (editRow.style.display === 'none') {
+    editRow.style.display = 'table-row';
+    itemRow.style.opacity = '0.5';
+    itemRow.style.pointerEvents = 'none';
+    syncExistingImageRemoveButtons(editRow);
+  } else {
+    editRow.style.display = 'none';
+    itemRow.style.opacity = '1';
+    itemRow.style.pointerEvents = 'auto';
+  }
+}
+
+function isRemovableImageSrc(src) {
+  const normalizedSrc = (src || '').trim();
+  return normalizedSrc && !normalizedSrc.endsWith('/static/images/placeholder.png');
+}
+
+function syncExistingImageRemoveButtons(root) {
+  const scope = root || document;
+  scope.querySelectorAll('.upload-remove-btn[data-preview-id]').forEach((button) => {
+    const preview = document.getElementById(button.dataset.previewId);
+    const currentSrc = preview ? (preview.dataset.currentSrc || preview.getAttribute('src') || '') : '';
+    const shouldShow = isRemovableImageSrc(currentSrc);
+
+    button.style.display = shouldShow ? 'block' : 'none';
+    if (preview) {
+      preview.classList.toggle('is-visible', shouldShow);
+      preview.style.display = shouldShow ? 'block' : 'none';
+    }
+  });
+}
+
+function confirmDelete(url, message) {
+  if (!confirm(message)) return;
+
+  fetch(url, {
+    method: 'DELETE',
+    headers: {
+      'X-CSRF-Token': CSRF_TOKEN
+    }
+  })
+    .then((response) => {
+      if (response.ok) {
+        location.reload();
+        return;
+      }
+      alert('Erro ao excluir registro.');
+    });
+}
+
+function confirmDeleteCategoria(id) {
+  confirmDelete(`/admin/categoria/${id}`, 'Tem certeza que deseja excluir esta categoria? As subcategorias e produtos vinculados tambem serao removidos.');
+}
+
+function confirmDeleteSubcategoria(id) {
+  confirmDelete(`/admin/subcategoria/${id}`, 'Tem certeza que deseja excluir este subcatalogo? Os produtos vinculados tambem serao removidos.');
+}
+
+function confirmDeleteQuemSomosImagem(id) {
+  confirmDelete(`/admin/quem-somos/imagem/${id}`, 'Tem certeza que deseja excluir esta imagem da pagina Quem Somos?');
+}
+
+function confirmDeleteProduto(id) {
+  confirmDelete(`/admin/produto/${id}`, 'Tem certeza que deseja excluir este produto?');
+}
+
+function updateFileLabel(input, labelId) {
+  const label = document.getElementById(labelId);
+  const file = input.files && input.files[0];
+  if (label) {
+    label.textContent = file ? file.name : 'Nenhum arquivo selecionado';
+  }
+}
+
+function updateUploadPreview(input, previewId, labelId, removeInputId, removeButtonId) {
+  updateFileLabel(input, labelId);
+
+  const preview = document.getElementById(previewId);
+  const file = input.files && input.files[0];
+  const currentSrc = preview ? (preview.dataset.currentSrc || '') : '';
+  const removeInput = removeInputId ? document.getElementById(removeInputId) : null;
+  const removeButton = removeButtonId ? document.getElementById(removeButtonId) : null;
+
+  if (!preview) return;
+  if (!file) {
+    if (removeInput && removeInput.value === '1') {
+      preview.removeAttribute('src');
+      preview.classList.remove('is-visible');
+      preview.style.display = 'none';
+      if (removeButton) removeButton.style.display = 'none';
+      return;
+    }
+    preview.src = currentSrc;
+    preview.style.display = currentSrc ? 'block' : 'none';
+    preview.classList.toggle('is-visible', Boolean(currentSrc));
+    if (removeButton) removeButton.style.display = currentSrc ? 'block' : 'none';
+    return;
+  }
+
+  if (removeInput) removeInput.value = '0';
+  const objectUrl = URL.createObjectURL(file);
+  preview.src = objectUrl;
+  preview.classList.add('is-visible');
+  preview.style.display = 'block';
+  if (removeButton) removeButton.style.display = 'block';
+  preview.onload = () => URL.revokeObjectURL(objectUrl);
+}
+
+function removeUploadImage(button, inputName, previewId, labelId, removeInputId) {
+  const form = button.closest('form');
+  const fileInput = form ? form.querySelector(`input[type="file"][name="${inputName}"]`) : null;
+  const removeInput = document.getElementById(removeInputId);
+  const preview = document.getElementById(previewId);
+  const label = document.getElementById(labelId);
+
+  if (fileInput) {
+    fileInput.value = '';
+  }
+  if (removeInput) {
+    removeInput.value = '1';
+  }
+  if (preview) {
+    preview.removeAttribute('src');
+    preview.classList.remove('is-visible');
+    preview.style.display = 'none';
+  }
+  if (label) {
+    label.textContent = 'Imagem marcada para remocao';
+  }
+  button.style.display = 'none';
+}
+
+function preencherSubcategorias(selectEl, categoriaSlug, currentValue) {
+  if (!selectEl) return;
+
+  const subcategorias = SUBCATEGORIAS_POR_CATEGORIA[categoriaSlug] || [];
+  const selectedValue = subcategorias.some((item) => item.slug === currentValue) ? currentValue : '';
+
+  selectEl.innerHTML = '';
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = subcategorias.length ? 'Selecione o subcatalogo' : 'Sem subcatalogo para esta categoria';
+  selectEl.appendChild(placeholder);
+
+  subcategorias.forEach((item) => {
+    const option = document.createElement('option');
+    option.value = item.slug;
+    option.textContent = item.nome_exibicao;
+    selectEl.appendChild(option);
+  });
+
+  selectEl.value = selectedValue;
+}
+
+function sincronizarSubcategoria(categorySelectId, subcategorySelectId, groupId) {
+  const categorySelect = document.getElementById(categorySelectId);
+  const subcategorySelect = document.getElementById(subcategorySelectId);
+  const group = document.getElementById(groupId);
+
+  if (!categorySelect || !subcategorySelect || !group) return;
+
+  const categoriaSlug = categorySelect.value;
+  const possuiSubcategorias = (SUBCATEGORIAS_POR_CATEGORIA[categoriaSlug] || []).length > 0;
+  const currentValue = subcategorySelect.dataset.current || '';
+
+  preencherSubcategorias(subcategorySelect, categoriaSlug, currentValue);
+  group.style.display = possuiSubcategorias ? '' : 'none';
+  subcategorySelect.required = possuiSubcategorias;
+  subcategorySelect.disabled = !possuiSubcategorias;
+
+  if (!possuiSubcategorias) {
+    subcategorySelect.dataset.current = '';
+    subcategorySelect.value = '';
+  }
+}
+
+function conectarSubcategoria(categorySelectId, subcategorySelectId, groupId) {
+  const categorySelect = document.getElementById(categorySelectId);
+  const subcategorySelect = document.getElementById(subcategorySelectId);
+
+  if (!categorySelect || !subcategorySelect) return;
+
+  sincronizarSubcategoria(categorySelectId, subcategorySelectId, groupId);
+
+  categorySelect.addEventListener('change', () => {
+    subcategorySelect.dataset.current = '';
+    sincronizarSubcategoria(categorySelectId, subcategorySelectId, groupId);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  conectarSubcategoria('categoria_slug', 'subcategoria_slug', 'create-subcategoria-group');
+  {% for p in produtos %}
+  conectarSubcategoria(
+    'edit-categoria-slug-{{ p.id }}',
+    'edit-produto-subcategoria-slug-{{ p.id }}',
+    'edit-subcategoria-group-{{ p.id }}'
+  );
+  {% endfor %}
+});
+</script>
+
+{% endblock %}

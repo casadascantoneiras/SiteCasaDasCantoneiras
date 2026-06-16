@@ -1,0 +1,35 @@
+{% extends "base_new.html" %}
+
+{% block body_class %}home-ref{% endblock %}
+
+{% block pre_footer %}{% endblock %}
+
+{% block content %}
+
+<section class="statement">
+  <div class="section-container statement__layout">
+    <div class="statement__content">
+      <h2 class="heading-lg statement__title">{{ SITE_CONFIG.quem_somos_title }}</h2>
+
+      <h3 class="statement__subtitle">{{ SITE_CONFIG.quem_somos_history_title }}</h3>
+      <p class="statement__text">
+        {{ SITE_CONFIG.quem_somos_history_text }}
+      </p>
+
+      <h3 class="statement__subtitle">{{ SITE_CONFIG.quem_somos_work_title }}</h3>
+      <p class="statement__text">
+        {{ SITE_CONFIG.quem_somos_work_text_1 }}
+      </p>
+      <p class="statement__text">
+        {{ SITE_CONFIG.quem_somos_work_text_2 }}
+      </p>
+      <a class="btn btn--primary" href="/contato">{{ SITE_CONFIG.quem_somos_button_label }}</a>
+    </div>
+    <div class="statement__gallery">
+      {% for imagem in galeria_quem_somos %}
+      <img src="{{ imagem.imagem_url }}" alt="{{ imagem.alt_texto }}">
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
